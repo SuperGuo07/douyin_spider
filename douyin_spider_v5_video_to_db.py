@@ -272,7 +272,7 @@ def videos_to_db(userinfo):
 
 
     # 建立数据库连接
-    db = pymysql.connect(host="localhost",user="root",password="guosicheng",database="spider_data" )
+    db = pymysql.connect(host="192.168.31.29",user="root",password="guosicheng",database="spider_data" )
     cursor = db.cursor()
 
     for i in range(len(userinfo["videos"])):
