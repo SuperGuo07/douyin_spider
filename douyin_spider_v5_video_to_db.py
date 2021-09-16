@@ -1,16 +1,14 @@
-try:
-    from BeautifulSoup import BeautifulSoup
-except ImportError:
-    from bs4 import BeautifulSoup
-import requests
-import urllib.request
-import urllib
+
+import datetime
 import json
 import re
-import openpyxl
-import datetime
-import pymysql
+import urllib
+import urllib.request
 
+import openpyxl
+import pymysql
+import requests
+from bs4 import BeautifulSoup
 
 headers = {
     'accept-encoding': 'deflate',
@@ -35,8 +33,7 @@ def getUserInfo(shared_url, **headers):
     sec_uid = urllib.parse.parse_qs(parsed.query)['sec_uid']
     user_info_url = "https://%s/web/api/v2/user/info/" % hostname
     user_info_params = { 'sec_uid': sec_uid }
-    res = requests.get(user_info_url, headers=headers,
-                       params=user_info_params).json()
+    res = requests.get(user_info_url, headers=headers,params=user_info_params).json(  )
     user_info = res['user_info']
     user_avatar = user_info['avatar_larger']['url_list'][2]
     user_nickname = user_info['nickname']
@@ -205,9 +202,9 @@ def to_excel(userinfo):
     ws.append(data)
     # ws.append(sheet_columns)
     # for i in range(len(data)):  #7
-        # ws.cell(1, i+1).value = sheet_columns[i]
+    # ws.cell(1, i+1).value = sheet_columns[i]
 
-        # ws.cell(2, i+1).value = data[i]
+    # ws.cell(2, i+1).value = data[i]
     wb.save(r"D:\Work\spider_data\douyin_spider_data" + "\\" +"douyin_spider" + ".xlsx")
     print("done")
 
@@ -275,7 +272,7 @@ def videos_to_db(userinfo):
 
 
     # 建立数据库连接
-    db = pymysql.connect(host="192.168.50.241",user="gsc",password="gsc123",database="jj_database" )
+    db = pymysql.connect(host="localhost",user="root",password="guosicheng",database="spider_data" )
     cursor = db.cursor()
 
     for i in range(len(userinfo["videos"])):
@@ -289,6 +286,7 @@ def videos_to_db(userinfo):
         comment_count = userinfo["videos"][i]["statistics"]["comment_count"]
         digg_count = userinfo["videos"][i]["statistics"]["digg_count"]
         aweme_id = userinfo["videos"][i]["statistics"]["aweme_id"]
+        aweme_id = str(aweme_id)
         # videos_data.append(desc)
         # videos_data.append(duration)
         # videos_data.append(cover)
@@ -301,15 +299,15 @@ def videos_to_db(userinfo):
         # print(desc, duration, cover, share_count, comment_count, digg_count, aweme_id)
 
 
-        sql = "INSERT INTO gj_mcn_spider_account_video_info(user_name, user_id, fans_count,follow_count, " \
+        sql = "INSERT INTO douyin_video_data(user_name, user_id, fans_count,follow_count, " \
               "zan_count,composition_count, like_count, video_desc,duration,cover,share_count,comment_count" \
               ",digg_count,aweme_id) values({},{},{},{},{},{},{},{},{},{},{},{},{}," \
               "{})".format('\'' + user_nickname + '\'','\'' + user_id + '\'',follower_count,following_count,zan_count,
-                           count_of_videos,like_count,'\'' + desc + '\'',duration,'\'' + cover + '\'',share_count,comment_count,digg_count,aweme_id)
+                           count_of_videos,like_count,'\'' + desc + '\'',duration,'\'' + cover + '\'',share_count,comment_count,digg_count,'\'' + aweme_id + '\'')
         cursor.execute(sql)
         db.commit()
     cursor.close()
-    print("db done")
+    print("db done" , user_nickname)
 
 
 def videos_first_to_excel(userinfo):
@@ -364,7 +362,7 @@ def videos_first_to_excel(userinfo):
         data.extend(videos_data)
         # print(data)
         # user_data.extend(videos_data)
-    # print(user_data)
+        # print(user_data)
         # data.append(user_data)
         # data.append(videos_data)
         ws.append(data)
@@ -449,12 +447,12 @@ def videos_to_excel(userinfo):
 
 
 if __name__ == '__main__':
-    # userInfo = getUserAll("https://v.douyin.com/eUf1dNh")# 乔哥很耿直
-    # userInfo1 = getUserAll("https://v.douyin.com/e5kkEqV")# 百草讲坛
-    # userInfo2 = getUserAll("https://v.douyin.com/emHhqcB")  #蔷小草的田园生活
-    # userInfo3 = getUserAll("https://v.douyin.com/emHLh2n")  #大贤和奶奶
-    # userInfo4 = getUserAll("https://v.douyin.com/emHJkSo")  #本草中国
-    # userInfo5 = getUserAll("https://v.douyin.com/emHMYHu")  #苏叶和京墨
+    userInfo = getUserAll("https://v.douyin.com/eUf1dNh")# 乔哥很耿直
+    userInfo1 = getUserAll("https://v.douyin.com/e5kkEqV")# 百草讲坛
+    userInfo2 = getUserAll("https://v.douyin.com/emHhqcB")  #蔷小草的田园生活
+    userInfo3 = getUserAll("https://v.douyin.com/emHLh2n")  #大贤和奶奶
+    userInfo4 = getUserAll("https://v.douyin.com/emHJkSo")  #本草中国
+    userInfo5 = getUserAll("https://v.douyin.com/emHMYHu")  #苏叶和京墨
     userInfo6 = getUserAll("https://v.douyin.com/exKnyoG/")  #王碧瑶要做辟谣王
     # userInfo1 = getUserAll("https://v.douyin.com/eXYjYgS/")  #只穿高跟鞋的汪奶奶
     # userInfo2 = getUserAll("https://v.douyin.com/eXF79Lc/")  #末那大叔
@@ -474,11 +472,12 @@ if __name__ == '__main__':
     # userInfo16 = getUserAll("https://v.douyin.com/eXFtwFs/")  #最潮刘老头
 
 
-    # videos_to_db(userInfo1)
-    # videos_to_db(userInfo2)
-    # videos_to_db(userInfo3)
-    # videos_to_db(userInfo4)
-    # videos_to_db(userInfo5)
+    videos_to_db(userInfo)
+    videos_to_db(userInfo1)
+    videos_to_db(userInfo2)
+    videos_to_db(userInfo3)
+    videos_to_db(userInfo4)
+    videos_to_db(userInfo5)
     videos_to_db(userInfo6)
     # print(userInfo6)
     # videos_to_db(userInfo7)
